@@ -1,0 +1,29 @@
+pipeline {
+  agent any
+  environment {
+    CI = "false"
+    VERCEL_TOKEN = credentials('vercel-token')
+  }
+  tools {
+    nodejs 'Node 20'
+  }
+  stages {
+    stage('Clean workspace') {
+      steps { deleteDir() }
+    }
+    stage('Checkout') {
+      steps {
+        git url: 'https://github.com/guswill24/surepositorio.git', branch: 'main'
+      }
+    }
+    stage('Install dependencies') {
+      steps { bat 'npm install --legacy-peer-deps' }
+    }
+    stage('Run GameTracker Unit Tests') {
+      steps { bat 'npx vitest run src/Experience/__tests__/GameTracker.test.js' }
+    }
+    stage('Build app') {
+      steps { bat 'npm run build' }
+    }
+  }
+}
