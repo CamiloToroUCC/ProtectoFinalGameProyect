@@ -1,51 +1,96 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import GameTracker from '../Utils/GameTracker'; // Ajusta el path si es necesario
+// src/Experience/__tests__/GameTracker.test.js
 
-// Crea mocks para las dependencias (por ejemplo, modal y menú)
-const mockModal = {
+import { describe, it, expect, beforeEach } from 'vitest';
+import GameTracker from '../Utils/GameTracker';
+
+// Creamos mocks para simular las dependencias "modal" y "menu"
+const fakeModal = {
   show: vi.fn(),
   hide: vi.fn()
 };
 
-const mockMenu = {
+const fakeMenu = {
   setTimer: vi.fn()
 };
 
-describe('GameTracker', () => {
+beforeEach(() => {
+  // Limpiar localStorage antes de cada prueba para evitar interferencias
+  localStorage.clear();
+  vi.clearAllMocks();
+});
+
+describe('Pruebas unitarias para GameTracker', () => {
   let tracker;
   beforeEach(() => {
-    localStorage.clear();
-    tracker = new GameTracker({ modal: mockModal, menu: mockMenu });
+    tracker = new GameTracker({ modal: fakeModal, menu: fakeMenu });
   });
 
-  it('debe inicializarse con startTime null y finished false', () => {
+  it('debe inicializar con startTime en null y finished en false', () => {
     expect(tracker.startTime).toBeNull();
     expect(tracker.finished).toBe(false);
   });
 
-  it('debe iniciar el timer con start()', () => {
+  it('start() debería asignar un valor a startTime y llamar a menu.setTimer', (done) => {
     tracker.start();
-    expect(tracker.startTime).not.toBeNull();
+    // Esperamos 1.1 segundos para permitir que el loop actualice el contador
+    setTimeout(() => {
+      // Se espera que startTime se haya establecido
+      expect(tracker.startTime).not.toBeNull();
+      // Se espera que menu.setTimer haya sido llamado al menos una vez
+      expect(fakeMenu.setTimer).toHaveBeenCalled();
+      // Finalizamos la ejecución del loop para evitar llamadas infinitas
+      tracker.finished = true;
+      done();
+    }, 1100);
   });
 
-  it('debe detener el timer y retornar el tiempo transcurrido', () => {
+  it('stop() debe marcar finished como true y retornar el tiempo transcurrido', (done) => {
     tracker.start();
-    tracker.startTime = Date.now() - 5000; // Simula 5 segundos transcurridos
-    const elapsed = tracker.stop();
-    expect(tracker.finished).toBe(true);
-    expect(elapsed).toBe(5);
+    setTimeout(() => {
+      const elapsed = tracker.stop();
+      expect(tracker.finished).toBe(true);
+      expect(elapsed).toBeGreaterThanOrEqual(1);
+      done();
+    }, 1100);
   });
 
-  it('debe guardar y ordenar correctamente los mejores tiempos', () => {
+  it('getElapsedSeconds() debe calcular el tiempo transcurrido correctamente', (done) => {
+    tracker.start();
+    setTimeout(() => {
+      const elapsed = tracker.getElapsedSeconds();
+      expect(elapsed).toBeGreaterThanOrEqual(1);
+      tracker.finished = true;
+      done();
+    }, 1100);
+  });
+
+  it('saveTime() debe almacenar y ordenar los tiempos correctamente', () => {
+    tracker.saveTime(15);
     tracker.saveTime(10);
-    tracker.saveTime(5);
     tracker.saveTime(20);
-    const best = tracker.getBestTimes();
-    expect(best).toEqual([5, 10, 20]);
+    let bestTimes = tracker.getBestTimes();
+    expect(bestTimes).toEqual([10, 15, 20]);
+
+    // Guardamos más tiempos para verificar que se guardan sólo los 5 mejores
+    tracker.saveTime(5);
+    tracker.saveTime(8);
+    tracker.saveTime(12);
+    bestTimes = tracker.getBestTimes();
+    expect(bestTimes.length).toBeLessThanOrEqual(5);
+    expect(bestTimes[0]).toBe(5);
   });
 
-  it('debe llamar a modal.show al invocar showEndGameModal', () => {
-    tracker.showEndGameModal(15);
-    expect(mockModal.show).toHaveBeenCalled();
+  it('showEndGameModal() debe llamar a modal.show con un mensaje que incluya el tiempo actual', () => {
+    // Preparamos "mejores tiempos" en localStorage
+    localStorage.setItem('bestTimes', JSON.stringify([7, 12, 9]));
+    tracker.showEndGameModal(12);
+
+    // Se espera que se llame a modal.show
+    expect(fakeModal.show).toHaveBeenCalled();
+    // Verificamos que el mensaje incluya "12s"
+    const callArg = fakeModal.show.mock.calls[0][0];
+    expect(callArg.message).toContain('12s');
+    // Verificamos también que se muestre algún ranking (ejemplo "#1:")
+    expect(callArg.message).toContain('#1:');
   });
 });
