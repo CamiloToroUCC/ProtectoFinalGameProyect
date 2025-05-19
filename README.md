@@ -1,4 +1,4 @@
-# Proyecto Final: Evaluación de Calidad de un Proyecto Frontend y Backend en React
+// Proyecto Final: Evaluación de Calidad de un Proyecto Frontend y Backend en React
 
 Este proyecto integra un juego desarrollado en React y un backend en Node.js/Express con MongoDB. Se aplicaron conceptos de calidad de software (como ISO/IEC 25010) mediante:
 
