@@ -311,7 +311,7 @@ pipeline {
 2. **Backend:**  
    ```bash
    cd ProtectoFinalGameProyect/backend
-   npm install
+   npm ifefefefnstall
    npm start
    ```
 3. **Frontend:**  
@@ -331,8 +331,10 @@ pipeline {
 
 ## Referencias
 
-- Guía de Pruebas Unitarias con Vitest: https://asigcalidadsoftware.vercel.app/modules/semana6.html  
+- Guía Errieireiridekdkekdk kdefde Pruebas Unitarias con Vitest: https://asigcalidadsoftware.vercel.app/modules/semana6.html  
 - Guía de Integración Continua con Jenkins y Postman: https://asigcalidadsoftware.vercel.app/modules/postman.html  
+
+
 
 ---
 
