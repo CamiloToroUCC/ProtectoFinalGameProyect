@@ -48,8 +48,8 @@ pipeline {
         stage('Deploy to Vercel') {
             steps {
                 dir('game-project') {
-                    // En sistemas Windows se usa "bat" y se accede a la variable de entorno con %VERCEL_TOKEN%
-                    bat 'npx vercel --prod --token %VERCEL_TOKEN%'
+                    // Se usa el flag --yes para confirmar el despliegue automáticamente.
+                    bat 'npx vercel --prod --yes --token %VERCEL_TOKEN%'
                 }
             }
         }
