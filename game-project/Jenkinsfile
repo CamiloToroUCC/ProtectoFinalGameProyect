@@ -1,29 +1,55 @@
 pipeline {
-  agent any
-  environment {
-    CI = "false"
-    VERCEL_TOKEN = credentials('vercel-token')
-  }
-  tools {
-    nodejs 'Node 20'
-  }
-  stages {
-    stage('Clean workspace') {
-      steps { deleteDir() }
+    agent any
+
+    environment {
+        CI = "false" 
+        VERCEL_TOKEN = "LR3pXpyR2FCj7tZ7kOcldVes"
     }
-    stage('Checkout') {
-      steps {
-        git url: 'https://github.com/guswill24/surepositorio.git', branch: 'main'
-      }
+
+    tools {
+        nodejs 'Node 20' // Asegúrate de tener configurada esta herramienta en Global Tool Configuration
     }
-    stage('Install dependencies') {
-      steps { bat 'npm install --legacy-peer-deps' }
+
+    stages {
+        stage('Clean workspace') {
+            steps {
+                deleteDir() // Limpia el workspace para un build limpio
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                // Se extrae el repositorio de GitHub, asegurándote de usar la URL y rama correctas.
+                git url: 'https://github.com/CamiloToroUCC/ProtectoFinalGameProyect.git', branch: 'main'
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                // Se instalan las dependencias. Si trabajas en Windows se utiliza "bat". Cambia a "sh" para Linux.
+                bat 'npm install --legacy-peer-deps'
+            }
+        }
+
+        stage('Run GameTracker Unit Tests') {
+            steps {
+                // Se ejecutan las pruebas unitarias usando Vitest para el módulo GameTracker
+                bat 'npx vitest run src/Experience/__tests__/GameTracker.test.js'
+            }
+        }
+
+        stage('Build app') {
+            steps {
+                // Se construye la aplicación (build)
+                bat 'npm run build'
+            }
+        }
+
+        stage('Deploy to Vercel') {
+            steps {
+                // Se despliega la aplicación en producción usando el Vercel CLI y el token definido.
+                bat 'npx vercel --prod --token %VERCEL_TOKEN%'
+            }
+        }
     }
-    stage('Run GameTracker Unit Tests') {
-      steps { bat 'npx vitest run src/Experience/__tests__/GameTracker.test.js' }
-    }
-    stage('Build app') {
-      steps { bat 'npm run build' }
-    }
-  }
 }
